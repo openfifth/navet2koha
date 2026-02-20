@@ -36,6 +36,11 @@ categorycodes:
     - X
     - Y
 
+# This mapping governs the borrower attribute which the following
+# data should be updated to:
+# ./Personpost/Avregistrering/AvregistreringsorsakKod
+avreg_attribute: AVLIDEN
+
 # This map tells the script where in Koha to put the data from Navet. The most
 # interesting thing here are middle names. If you want to store them in the
 # firstname field, concatenated onto the end of the "Fornamn", do this:

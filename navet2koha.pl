@@ -322,6 +322,14 @@ sub _process_borrower {
         
         }
 
+        if ($config->{'avreg_attribute'}) {
+            _update_patron_attribute(
+                $borrower, 
+                $node->findvalue('./Personpost/Avregistrering/AvregistreringsorsakKod'),
+                $config->{'avreg_attribute'}
+            );
+        }
+
         # Only save if we have some changes
         if ( $is_changed == 1 ) {
             say $log "Going to update borrower with borrowernumber=" . $borrower->borrowernumber if $config->{'verbose'};
@@ -335,6 +343,54 @@ sub _process_borrower {
 
     }
 
+}
+
+=head2 _update_patron_attribute
+
+Generalized helper to update a patron attribute with contents from XML.
+Returns 1 if a change was made, 0 otherwise.
+
+=cut
+
+sub _update_patron_attribute {
+    my ( $borrower, $navet_value, $attr_code ) = @_;
+    
+    return 0 unless $attr_code;
+
+    my $attribute_type = Koha::Patron::Attribute::Types->find($attr_code);
+    unless ($attribute_type) {
+        say $log "Configuration Error: Attribute code '$attr_code' does not exist in Koha." if $config->{'verbose'};
+        return 0;
+    }
+
+    if ( defined $navet_value && $navet_value ne '' ) {
+        
+        my $existing_attr = Koha::Patron::Attributes->find({
+            borrowernumber => $borrower->borrowernumber,
+            code           => $attr_code
+        });
+
+        if (!$existing_attr){
+            say $log "Adding Attribute [$attr_code]: Koha='(empty)' -> Navet='$navet_value'" if $config->{'verbose'};
+            if ( $test_mode == 0 ) {
+                $borrower->add_extended_attribute(
+                    { code => $attr_code, attribute => $navet_value },
+                );
+            } else {
+                say $log "TEST MODE: Skipping update for $attr_code" if $config->{'verbose'};
+            }
+        } elsif($existing_attr->attribute ne $navet_value){
+            say $log "Updating Attribute [$attr_code]: Koha='" . ($existing_attr ? $existing_attr->attribute : 'NULL') . "' -> Navet='$navet_value'" if $config->{'verbose'};
+            if ( $test_mode == 0 ) {
+                $existing_attr->attribute($navet_value)->store;
+            } else {
+                say $log "TEST MODE: Skipping update for $attr_code" if $config->{'verbose'};
+            }
+            return 1;
+        }
+    }
+    
+    return 0;
 }
 
 =head1 OPTIONS
