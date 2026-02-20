@@ -257,6 +257,13 @@ sub _process_borrower {
     # say $log "We have a node" if $config->{'verbose'};
     # say $log Dumper join ' ', $node->findvalue('./Personpost/Namn/Fornamn') if $config->{'verbose'};
 
+    # Update SKYDDAD with Navet Sekretessmarkering
+    _update_patron_attribute(
+        $borrower,
+        $node->findvalue('./Sekretessmarkering'),
+        $config->{ 'protected_attribute' }
+    );
+
     # Some patrons have a hidden address. These should not be updated with data
     # from Navet. Such patrons should have an extended patron attribute set to 1.
     # The name of the attribute is specified by the "protected_attribute" config
