@@ -174,21 +174,6 @@ sub _process_borrower {
 
     my ( $borrower ) = @_;
 
-    # Some patrons have a hidden address. These should not be updated with data
-    # from Navet. Such patrons should have an extended patron attribute set to 1.
-    # The name of the attribute is specified by the "protected_attribute" config
-    # variable.
-    my $protected = Koha::Patron::Attributes->search({
-        'borrowernumber' => $borrower->borrowernumber,
-        'code'           => $config->{ 'protected_attribute' },
-    });
-    if ( $protected && $protected->count > 0 && $protected->next->attribute == 1 ) {
-        say $log "Protected patron" if $config->{'verbose'};
-        return undef;
-    } else {
-        say $log "Not protected" if $config->{'verbose'};
-    }
-
     ## Check the social security number makes sense
     my $socsec;
 
@@ -271,6 +256,21 @@ sub _process_borrower {
     return undef unless $node;
     # say $log "We have a node" if $config->{'verbose'};
     # say $log Dumper join ' ', $node->findvalue('./Personpost/Namn/Fornamn') if $config->{'verbose'};
+
+    # Some patrons have a hidden address. These should not be updated with data
+    # from Navet. Such patrons should have an extended patron attribute set to 1.
+    # The name of the attribute is specified by the "protected_attribute" config
+    # variable.
+    my $protected = Koha::Patron::Attributes->search({
+        'borrowernumber' => $borrower->borrowernumber,
+        'code'           => $config->{ 'protected_attribute' },
+    });
+    if ( $protected && $protected->count > 0 && $protected->next->attribute == 1 ) {
+        say $log "Protected patron" if $config->{'verbose'};
+        return undef;
+    } else {
+        say $log "Not protected" if $config->{'verbose'};
+    }
 
     if ( $capture_names ) {
 
