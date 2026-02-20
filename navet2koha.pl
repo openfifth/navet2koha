@@ -272,7 +272,7 @@ sub _process_borrower {
         'borrowernumber' => $borrower->borrowernumber,
         'code'           => $config->{ 'protected_attribute' },
     });
-    if ( $protected && $protected->count > 0 && $protected->next->attribute == 1 ) {
+    if ( $protected && $protected->count > 0 && $protected->next->attribute eq 'J' ) {
         say $log "Protected patron" if $config->{'verbose'};
         return undef;
     } else {
